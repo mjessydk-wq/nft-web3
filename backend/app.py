@@ -124,8 +124,7 @@ init_db()
 
 @app.route("/")
 def home():
-    expire_holds()
-    return jsonify({"message": "iNFTCO backend is running"})
+    return jsonify({"message": "NFT Web3 Backend is Running 🚀"})
 
 
 @app.route("/api/register", methods=["POST"])
