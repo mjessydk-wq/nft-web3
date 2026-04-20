@@ -109,9 +109,10 @@ def release_expired_holds():
 
 @app.route("/")
 def home():
-    return jsonify({
-        "status": "NFT Web3 backend running"
-    }), 200
+    return {
+        "status": "running",
+        "message": "NFT Web3 backend is live"
+    }, 200
 
 
 @app.route("/test")
