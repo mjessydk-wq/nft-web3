@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NFT Web3 - Create NFT</title>
+  <link rel="icon" type="image/png" href="assets/nftweb3-favicon.png" />
+  <link rel="shortcut icon" href="assets/nftweb3-favicon.png" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div id="pageLoader" class="page-loader">
+  <div class="brand-loader-box">
+    <img src="assets/nftweb3-logo.png" alt="NFT Web3" class="brand-loader-logo" />
+    <div class="brand-loader-bar">
+      <span></span>
+    </div>
+    <p>Loading NFT Web3...</p>
+  </div>
+</div>
+
+  <div class="animated-grid"></div>
+  <div class="bg-blur blur-1"></div>
+  <div class="bg-blur blur-2"></div>
+
+  <header class="navbar">
+    <a href="index.html" class="logo logo-wrap">
+  <img src="assets/nftweb3-logo.png" alt="NFT Web3" class="site-logo" />
+</a>
+    <nav class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="explore.html">Explore</a>
+      <a href="collection.html">Collection</a>
+      <a href="about.html">About</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="create-nft.html" class="active">Create NFT</a>
+      <a href="admin-deposits.html">Admin Deposits</a>
+    </nav>
+    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+      <button class="connect-btn" id="connectWallet">Connect Wallet</button>
+      <button onclick="logout()" class="secondary-btn">Logout</button>
+    </div>
+  </header>
+
+  <section class="page-hero small-page-hero fade-up fade-delay-1">
+    <h1>Create Admin NFT</h1>
+    <p>Only the admin account can create NFTs.</p>
+  </section>
+
+  <section class="section center-section fade-up fade-delay-2">
+    <div class="connect-box glass-box">
+      <span class="badge">ADMIN ONLY</span>
+      <h1>Create a New NFT</h1>
+      <p>Add a new admin NFT to the platform.</p>
+
+      <form class="auth-form" id="nftForm">
+        <input type="text" id="nftTitle" placeholder="NFT title" required />
+        <input type="text" id="nftImage" placeholder="Image URL" required />
+        <input type="text" id="nftPrice" placeholder="Price e.g. 1.25 ETH" required />
+        <button type="submit" class="primary-btn big-btn">Create NFT</button>
+      </form>
+
+      <p class="form-message" id="nftMessage"></p>
+    </div>
+  </section>
+
+  <script src="script.js"></script>
+</body>
+</html>

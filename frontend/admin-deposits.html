@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NFT Web3 - Admin Deposits</title>
+  <link rel="icon" type="image/png" href="assets/nftweb3-favicon.png" />
+  <link rel="shortcut icon" href="assets/nftweb3-favicon.png" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="pageLoader" class="page-loader">
+    <div class="brand-loader-box">
+      <img src="assets/nftweb3-logo.png" alt="NFT Web3" class="brand-loader-logo" />
+      <div class="brand-loader-bar">
+        <span></span>
+      </div>
+      <p>Loading NFT Web3...</p>
+    </div>
+  </div>
+
+  <div class="animated-grid"></div>
+  <div class="bg-blur blur-1"></div>
+  <div class="bg-blur blur-2"></div>
+
+  <header class="navbar">
+    <a href="index.html" class="logo logo-wrap">
+      <img src="assets/nftweb3-logo.png" alt="NFT Web3" class="site-logo" />
+    </a>
+
+    <nav class="nav-links" id="mainNav">
+      <a href="index.html">Home</a>
+      <a href="explore.html">Explore</a>
+      <a href="dashboard.html">Dashboard</a>
+    </nav>
+
+    <div id="authButtons" style="display:flex; gap:12px; flex-wrap:wrap;"></div>
+  </header>
+
+  <section class="page-hero small-page-hero fade-up fade-delay-1">
+    <h1>Pending Deposit Requests</h1>
+    <p>Admin confirms deposits before the 12-hour hold starts.</p>
+  </section>
+
+  <section class="section fade-up fade-delay-2">
+    <div class="about-grid" id="pendingDepositsGrid">
+      <div class="glass-box">
+        <h2>Loading pending deposits...</h2>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div>
+      <h3>NFT Web3</h3>
+      <p>Admin-curated holdable NFTs with deposit confirmation.</p>
+    </div>
+    <p>© 2026 NFT Web3. All rights reserved.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

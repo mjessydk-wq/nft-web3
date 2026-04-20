@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NFT Web3 - Explore</title>
+  <link rel="icon" type="image/png" href="assets/nftweb3-favicon.png" />
+  <link rel="shortcut icon" href="assets/nftweb3-favicon.png" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+<div id="pageLoader" class="page-loader">
+  <div class="brand-loader-box">
+    <img src="assets/nftweb3-logo.png" alt="NFT Web3" class="brand-loader-logo" />
+    <div class="brand-loader-bar">
+      <span></span>
+    </div>
+    <p>Loading NFT Web3...</p>
+  </div>
+</div>
+
+  <div class="animated-grid"></div>
+  <div class="bg-blur blur-1"></div>
+  <div class="bg-blur blur-2"></div>
+
+<header class="navbar">
+  <a href="index.html" class="logo logo-wrap">
+    <img src="assets/nftweb3-logo.png" alt="NFT Web3" class="site-logo" />
+  </a>
+
+  <nav class="nav-links" id="mainNav">
+    <a href="index.html">Home</a>
+    <a href="explore.html" class="active">Explore</a>
+    <a href="dashboard.html">Dashboard</a>
+  </nav>
+
+  <div id="authButtons" style="display:flex; gap:12px; flex-wrap:wrap;"></div>
+</header>
+
+  <section class="hero-slider-section fade-up fade-delay-1">
+    <div class="hero-slider">
+      <div class="hero-slide active">
+        <img src="https://images.unsplash.com/photo-1545239351-1141bd82e8a6?q=80&w=1400&auto=format&fit=crop" alt="Explore Slide 1">
+        <div class="hero-slide-content">
+          <span class="badge">EXPLORE ADMIN NFTs</span>
+          <h1>Discover Holdable Admin Drops</h1>
+          <p>
+            Browse premium admin-created NFTs, choose a deposit coin, and submit
+            a hold request for manual confirmation.
+          </p>
+          <div class="hero-actions">
+            <a href="#admin-nfts" class="primary-btn">View Holdable NFTs</a>
+            <a href="#external-nfts" class="secondary-btn">View External NFTs</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-slide">
+        <img src="https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?q=80&w=1400&auto=format&fit=crop" alt="Explore Slide 2">
+        <div class="hero-slide-content">
+          <span class="badge">DEPOSIT REQUEST FLOW</span>
+          <h1>Choose Coin, Deposit, Wait For Approval</h1>
+          <p>
+            Select BTC, ETH, or USDT, send your deposit to the shown wallet, and
+            wait for admin confirmation before your 12-hour hold starts.
+          </p>
+          <div class="hero-actions">
+            <a href="#how-it-works" class="primary-btn">How It Works</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-slide">
+        <img src="https://images.unsplash.com/photo-1642425149556-b6f6c1f9b1d4?q=80&w=1400&auto=format&fit=crop" alt="Explore Slide 3">
+        <div class="hero-slide-content">
+          <span class="badge">BUSY MARKETPLACE</span>
+          <h1>Explore Internal And External Collections</h1>
+          <p>
+            See holdable admin listings first, then continue browsing external NFT
+            collections in a marketplace-style layout.
+          </p>
+          <div class="hero-actions">
+            <a href="#external-nfts" class="primary-btn">Browse External NFTs</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section fade-up fade-delay-2">
+    <div class="market-toolbar">
+      <input type="text" class="market-search" placeholder="Search holdable NFTs, external collections, categories..." />
+      <div class="market-tags">
+        <button class="tag-btn">All</button>
+        <button class="tag-btn">Holdable</button>
+        <button class="tag-btn">BTC</button>
+        <button class="tag-btn">ETH</button>
+        <button class="tag-btn">USDT</button>
+        <button class="tag-btn">External</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="section fade-up fade-delay-2" id="how-it-works">
+    <div class="section-title-wrap">
+      <p class="section-mini">EXPLORE FLOW</p>
+      <h2>How It Works</h2>
+    </div>
+
+    <div class="about-grid">
+      <div class="glass-box">
+        <h2>1. Choose NFT</h2>
+        <p>Pick an admin NFT you want to hold from the available curated listings.</p>
+      </div>
+
+      <div class="glass-box">
+        <h2>2. Submit Deposit Request</h2>
+        <p>Choose a deposit coin, copy the wallet address, and submit that you have deposited.</p>
+      </div>
+
+      <div class="glass-box">
+        <h2>3. Admin Confirms</h2>
+        <p>Once the deposit is confirmed, your NFT becomes held for 12 hours automatically.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section fade-up fade-delay-3" id="admin-nfts">
+    <div class="section-title-wrap">
+      <p class="section-mini">ADMIN LISTINGS</p>
+      <h2>Holdable NFTs</h2>
+    </div>
+
+    <div class="card-grid market-grid" id="nftGrid">
+      <div class="glass-box">
+        <h2>Loading admin NFTs...</h2>
+      </div>
+    </div>
+  </section>
+
+  <section class="section fade-up fade-delay-4" id="external-nfts">
+    <div class="section-title-wrap">
+      <p class="section-mini">EXTERNAL SHOWCASE</p>
+      <h2>Featured External NFTs</h2>
+    </div>
+
+    <div class="card-grid market-grid" id="externalNftGrid">
+      <div class="glass-box">
+        <h2>Loading external NFTs...</h2>
+      </div>
+    </div>
+  </section>
+
+  <section class="section fade-up fade-delay-4">
+    <div class="cta-banner">
+      <div>
+        <h2>Ready to request a hold?</h2>
+        <p>Sign up, browse admin NFTs, and submit your deposit request.</p>
+      </div>
+      <a href="register.html" class="primary-btn">Get Started</a>
+    </div>
+  </section>
+
+  <!-- THEMED DESKTOP HOLD / PAYMENT PROMPT -->
+  <div class="modal-overlay" id="holdModal">
+    <div class="hold-modal exchange-theme-modal">
+      <div class="modal-header">
+        <div>
+          <p class="section-mini prompt-mini">HOLD PAYMENT</p>
+          <h2>Secure NFT Hold</h2>
+        </div>
+        <button class="modal-close" id="closeHoldModal">&times;</button>
+      </div>
+
+      <div class="exchange-layout">
+        <div class="exchange-left-panel">
+          <div class="receive-card">
+            <div class="receive-top-warning">
+              <span class="warning-dot">!</span>
+              <p>
+                Send only the selected coin to this address. Your hold starts after admin confirmation.
+              </p>
+            </div>
+
+            <div class="receive-asset-head">
+              <div class="asset-badge">
+                <span class="asset-circle"></span>
+                <strong id="selectedCoinLabel">ETH</strong>
+              </div>
+              <span class="network-pill">Deposit</span>
+            </div>
+
+            <div class="qr-box">
+              <div class="fake-qr" id="fakeQrBox">
+                <div class="qr-center-logo">i</div>
+              </div>
+            </div>
+
+            <div class="receive-address-box">
+              <label>Deposit Wallet</label>
+              <div class="payment-wallet big-wallet-text" id="modalWalletAddress">-</div>
+            </div>
+
+            <div class="receive-action-row">
+              <button class="secondary-btn small-btn" id="copyWalletBtn">Copy</button>
+              <button class="secondary-btn small-btn" id="setAmountBtn" type="button">Set Amount</button>
+            </div>
+
+            <div class="receive-bottom-note">
+              <strong>Status</strong>
+              <p id="modalStatusText">Waiting for your deposit request.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="exchange-right-panel">
+          <div class="hold-nft-summary">
+            <div class="hold-preview-card large-preview-card">
+              <img id="holdPreviewImage" src="" alt="NFT Preview" />
+            </div>
+
+            <div class="hold-preview-info">
+              <h3 id="holdPreviewTitle">NFT Title</h3>
+              <p class="hold-preview-note">
+                Complete the deposit details below and submit your request.
+              </p>
+            </div>
+          </div>
+
+          <div class="exchange-info-grid">
+            <div class="exchange-info-card">
+              <span>Hold Status</span>
+              <strong id="holdPreviewStatus">Waiting for payment</strong>
+            </div>
+            <div class="exchange-info-card">
+              <span>Hold Duration</span>
+              <strong>12 hours</strong>
+            </div>
+          </div>
+
+          <div class="payment-box payment-highlight-box">
+            <label>Amount To Deposit</label>
+            <div class="payment-value large-payment-value" id="modalHoldAmount">0</div>
+          </div>
+
+          <div class="payment-box">
+            <label>Select Coin</label>
+            <div class="coin-select-grid">
+              <button type="button" class="coin-btn active" data-coin="ETH">ETH</button>
+              <button type="button" class="coin-btn" data-coin="BTC">BTC</button>
+              <button type="button" class="coin-btn" data-coin="USDT">USDT</button>
+            </div>
+            <input type="hidden" id="coinSelect" value="ETH" />
+          </div>
+
+          <div class="payment-box">
+            <label>Transaction Reference / Hash (optional)</label>
+            <input
+              type="text"
+              id="txReferenceInput"
+              class="market-search prompt-input"
+              placeholder="Paste tx hash or payment reference"
+            />
+          </div>
+
+          <div class="payment-box payment-note-box">
+            <label>Important Note</label>
+            <p class="payment-note-text">
+              Deposit the exact amount to the selected address. The NFT stays available until the admin confirms the request.
+            </p>
+          </div>
+
+          <div class="modal-actions">
+            <button class="secondary-btn" id="cancelHoldBtn">Cancel</button>
+            <button class="primary-btn" id="submitDepositBtn">I Have Deposited</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
