@@ -10,6 +10,10 @@ import json
 app = Flask(__name__)
 CORS(app)
 
+@app.route("/")
+def home():
+    return "NFT Web3 Backend is Running 🚀"
+
 ADMIN_EMAIL = "mjessydk@gmail.com"
 HOLD_HOURS = 12
 
