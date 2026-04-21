@@ -3,8 +3,8 @@ from flask_cors import CORS
 import os
 from datetime import datetime, timedelta
 
-import psycopg2
-from psycopg2.extras import RealDictCursor
+import psycopg
+from psycopg.extras import RealDictCursor
 
 app = Flask(__name__)
 CORS(app)
@@ -33,7 +33,7 @@ def get_db():
     if not DATABASE_URL:
         raise Exception("DATABASE_URL is missing. Add PostgreSQL variables in Railway.")
 
-    return psycopg2.connect(
+    return psycopg.connect(
         DATABASE_URL,
         cursor_factory=RealDictCursor,
         sslmode="require"
@@ -337,7 +337,7 @@ def register():
             "user": user
         }), 201
 
-    except psycopg2.Error:
+    except psycopg.Error:
         if conn:
             conn.rollback()
         return json_error("User already exists", 400)
