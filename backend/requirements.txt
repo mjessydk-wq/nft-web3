@@ -1,4 +1,4 @@
-flask
-flask-cors
-gunicorn
-werkzeug
+Flask==3.1.0
+flask-cors==5.0.0
+gunicorn==23.0.0
+psycopg[binary]==3.2.9
