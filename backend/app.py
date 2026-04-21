@@ -1,9 +1,10 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 import os
+from datetime import datetime, timedelta
+
 import psycopg2
 from psycopg2.extras import RealDictCursor
-from datetime import datetime, timedelta
 
 app = Flask(__name__)
 CORS(app)
@@ -21,57 +22,91 @@ DEPOSIT_WALLETS = {
     "USDT": "TExampleUSDTWalletAddress1234567890"
 }
 
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+
 # =========================
 # DATABASE (PostgreSQL)
 # =========================
 
-DATABASE_URL = os.getenv("DATABASE_URL")
-
 def get_db():
-    return psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
+    if not DATABASE_URL:
+        raise Exception("DATABASE_URL is missing. Add PostgreSQL variables in Railway.")
+
+    return psycopg2.connect(
+        DATABASE_URL,
+        cursor_factory=RealDictCursor,
+        sslmode="require"
+    )
+
 
 # =========================
 # INIT DB
 # =========================
 
 def init_db():
-    conn = get_db()
-    cur = conn.cursor()
+    conn = None
+    cur = None
 
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            id SERIAL PRIMARY KEY,
-            email TEXT UNIQUE,
-            password TEXT
-        );
-    """)
+    try:
+        conn = get_db()
+        cur = conn.cursor()
 
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS nfts (
-            id SERIAL PRIMARY KEY,
-            name TEXT,
-            image TEXT,
-            price TEXT,
-            holdable BOOLEAN DEFAULT TRUE
-        );
-    """)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                email TEXT UNIQUE NOT NULL,
+                password TEXT NOT NULL
+            );
+        """)
 
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS holds (
-            id SERIAL PRIMARY KEY,
-            user_email TEXT,
-            nft_id INTEGER,
-            start_time TIMESTAMP,
-            end_time TIMESTAMP,
-            status TEXT
-        );
-    """)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS nfts (
+                id SERIAL PRIMARY KEY,
+                name TEXT NOT NULL,
+                image TEXT,
+                price TEXT,
+                holdable BOOLEAN DEFAULT TRUE
+            );
+        """)
 
-    conn.commit()
-    cur.close()
-    conn.close()
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS holds (
+                id SERIAL PRIMARY KEY,
+                user_email TEXT NOT NULL,
+                nft_id INTEGER NOT NULL REFERENCES nfts(id) ON DELETE CASCADE,
+                start_time TIMESTAMP NOT NULL,
+                end_time TIMESTAMP NOT NULL,
+                status TEXT NOT NULL
+            );
+        """)
 
-init_db()
+        conn.commit()
+
+    except Exception as e:
+        print("DB INIT ERROR:", str(e))
+        raise
+
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
+
+
+try:
+    init_db()
+except Exception as e:
+    print("App startup database error:", str(e))
+
+
+# =========================
+# HELPERS
+# =========================
+
+def json_error(message, status=400):
+    return jsonify({"error": message}), status
+
 
 # =========================
 # ROUTES
@@ -79,7 +114,40 @@ init_db()
 
 @app.route("/")
 def home():
-    return jsonify({"message": "NFT Web3 backend is live"})
+    return jsonify({
+        "message": "NFT Web3 backend is live",
+        "database": "PostgreSQL"
+    })
+
+
+@app.route("/debug-db")
+def debug_db():
+    conn = None
+    cur = None
+
+    try:
+        conn = get_db()
+        cur = conn.cursor()
+        cur.execute("SELECT NOW() AS server_time;")
+        result = cur.fetchone()
+
+        return jsonify({
+            "status": "connected",
+            "server_time": str(result["server_time"])
+        })
+
+    except Exception as e:
+        return jsonify({
+            "status": "failed",
+            "error": str(e)
+        }), 500
+
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
+
 
 # =========================
 # GET NFTs
@@ -87,15 +155,19 @@ def home():
 
 @app.route("/api/nfts", methods=["GET"])
 def get_nfts():
+    conn = None
+    cur = None
+
     try:
         conn = get_db()
         cur = conn.cursor()
 
-        cur.execute("SELECT * FROM nfts ORDER BY id DESC")
+        cur.execute("""
+            SELECT id, name, image, price, holdable
+            FROM nfts
+            ORDER BY id DESC
+        """)
         nfts = cur.fetchall()
-
-        cur.close()
-        conn.close()
 
         return jsonify({
             "deposit_wallets": DEPOSIT_WALLETS,
@@ -105,6 +177,12 @@ def get_nfts():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
+
 
 # =========================
 # ADD NFT (ADMIN ONLY)
@@ -112,32 +190,53 @@ def get_nfts():
 
 @app.route("/api/nfts", methods=["POST"])
 def add_nft():
-    data = request.json
+    data = request.get_json(silent=True) or {}
 
     if data.get("email") != ADMIN_EMAIL:
-        return jsonify({"error": "Unauthorized"}), 403
+        return json_error("Unauthorized", 403)
 
-    conn = get_db()
-    cur = conn.cursor()
+    name = data.get("name")
+    image = data.get("image")
+    price = data.get("price")
 
-    cur.execute("""
-        INSERT INTO nfts (name, image, price, holdable)
-        VALUES (%s, %s, %s, %s)
-        RETURNING *
-    """, (
-        data.get("name"),
-        data.get("image"),
-        data.get("price"),
-        True
-    ))
+    if not name:
+        return json_error("NFT name is required")
+    if not image:
+        return json_error("NFT image is required")
+    if not price:
+        return json_error("NFT price is required")
 
-    new_nft = cur.fetchone()
+    conn = None
+    cur = None
 
-    conn.commit()
-    cur.close()
-    conn.close()
+    try:
+        conn = get_db()
+        cur = conn.cursor()
 
-    return jsonify(new_nft)
+        cur.execute("""
+            INSERT INTO nfts (name, image, price, holdable)
+            VALUES (%s, %s, %s, %s)
+            RETURNING id, name, image, price, holdable
+        """, (
+            name,
+            image,
+            price,
+            True
+        ))
+
+        new_nft = cur.fetchone()
+        conn.commit()
+
+        return jsonify(new_nft), 201
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
 
 # =========================
@@ -146,42 +245,61 @@ def add_nft():
 
 @app.route("/api/hold", methods=["POST"])
 def hold_nft():
-    data = request.json
+    data = request.get_json(silent=True) or {}
 
     email = data.get("email")
     nft_id = data.get("nft_id")
 
     if not email or not nft_id:
-        return jsonify({"error": "Missing data"}), 400
+        return json_error("Missing email or nft_id")
 
-    start_time = datetime.utcnow()
-    end_time = start_time + timedelta(hours=HOLD_HOURS)
+    conn = None
+    cur = None
 
-    conn = get_db()
-    cur = conn.cursor()
+    try:
+        conn = get_db()
+        cur = conn.cursor()
 
-    cur.execute("""
-        INSERT INTO holds (user_email, nft_id, start_time, end_time, status)
-        VALUES (%s, %s, %s, %s, %s)
-        RETURNING *
-    """, (
-        email,
-        nft_id,
-        start_time,
-        end_time,
-        "active"
-    ))
+        cur.execute("SELECT id, holdable FROM nfts WHERE id = %s", (nft_id,))
+        nft = cur.fetchone()
 
-    hold = cur.fetchone()
+        if not nft:
+            return json_error("NFT not found", 404)
 
-    conn.commit()
-    cur.close()
-    conn.close()
+        if not nft["holdable"]:
+            return json_error("This NFT is not holdable", 400)
 
-    return jsonify({
-        "message": "NFT held successfully",
-        "hold": hold
-    })
+        start_time = datetime.utcnow()
+        end_time = start_time + timedelta(hours=HOLD_HOURS)
+
+        cur.execute("""
+            INSERT INTO holds (user_email, nft_id, start_time, end_time, status)
+            VALUES (%s, %s, %s, %s, %s)
+            RETURNING *
+        """, (
+            email,
+            nft_id,
+            start_time,
+            end_time,
+            "active"
+        ))
+
+        hold = cur.fetchone()
+        conn.commit()
+
+        return jsonify({
+            "message": "NFT held successfully",
+            "hold": hold
+        })
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
 
 # =========================
@@ -190,30 +308,50 @@ def hold_nft():
 
 @app.route("/api/register", methods=["POST"])
 def register():
-    data = request.json
+    data = request.get_json(silent=True) or {}
 
     email = data.get("email")
     password = data.get("password")
 
-    conn = get_db()
-    cur = conn.cursor()
+    if not email or not password:
+        return json_error("Email and password are required")
+
+    conn = None
+    cur = None
 
     try:
+        conn = get_db()
+        cur = conn.cursor()
+
         cur.execute("""
             INSERT INTO users (email, password)
             VALUES (%s, %s)
+            RETURNING id, email
         """, (email, password))
 
+        user = cur.fetchone()
         conn.commit()
 
-        return jsonify({"message": "User registered"})
+        return jsonify({
+            "message": "User registered",
+            "user": user
+        }), 201
 
-    except:
-        return jsonify({"error": "User already exists"}), 400
+    except psycopg2.Error:
+        if conn:
+            conn.rollback()
+        return json_error("User already exists", 400)
+
+    except Exception as e:
+        if conn:
+            conn.rollback()
+        return jsonify({"error": str(e)}), 500
 
     finally:
-        cur.close()
-        conn.close()
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
 
 # =========================
@@ -222,27 +360,82 @@ def register():
 
 @app.route("/api/login", methods=["POST"])
 def login():
-    data = request.json
+    data = request.get_json(silent=True) or {}
 
     email = data.get("email")
     password = data.get("password")
 
-    conn = get_db()
-    cur = conn.cursor()
+    if not email or not password:
+        return json_error("Email and password are required")
 
-    cur.execute("""
-        SELECT * FROM users WHERE email=%s AND password=%s
-    """, (email, password))
+    conn = None
+    cur = None
 
-    user = cur.fetchone()
+    try:
+        conn = get_db()
+        cur = conn.cursor()
 
-    cur.close()
-    conn.close()
+        cur.execute("""
+            SELECT id, email
+            FROM users
+            WHERE email = %s AND password = %s
+        """, (email, password))
 
-    if user:
-        return jsonify({"message": "Login successful"})
-    else:
-        return jsonify({"error": "Invalid credentials"}), 401
+        user = cur.fetchone()
+
+        if user:
+            return jsonify({
+                "message": "Login successful",
+                "user": user,
+                "is_admin": email == ADMIN_EMAIL
+            })
+
+        return json_error("Invalid credentials", 401)
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
+
+
+# =========================
+# GET USER HOLDS
+# =========================
+
+@app.route("/api/holds/<email>", methods=["GET"])
+def get_user_holds(email):
+    conn = None
+    cur = None
+
+    try:
+        conn = get_db()
+        cur = conn.cursor()
+
+        cur.execute("""
+            SELECT h.id, h.user_email, h.nft_id, h.start_time, h.end_time, h.status,
+                   n.name AS nft_name, n.image AS nft_image, n.price AS nft_price
+            FROM holds h
+            JOIN nfts n ON h.nft_id = n.id
+            WHERE h.user_email = %s
+            ORDER BY h.id DESC
+        """, (email,))
+
+        holds = cur.fetchall()
+
+        return jsonify({"holds": holds})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
 
 # =========================
@@ -250,4 +443,5 @@ def login():
 # =========================
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080)
+    port = int(os.getenv("PORT", 8080))
+    app.run(host="0.0.0.0", port=port)
