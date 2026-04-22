@@ -10,32 +10,32 @@
 </head>
 <body>
   <div id="pageLoader" class="page-loader">
-  <div class="brand-loader-box">
-    <img src="assets/nftweb3-logo.png" alt="NFT Web3" class="brand-loader-logo" />
-    <div class="brand-loader-bar">
-      <span></span>
+    <div class="brand-loader-box">
+      <img src="assets/nftweb3-logo.png" alt="NFT Web3" class="brand-loader-logo" />
+      <div class="brand-loader-bar">
+        <span></span>
+      </div>
+      <p>Loading NFT Web3...</p>
     </div>
-    <p>Loading NFT Web3...</p>
   </div>
-</div>
 
   <div class="animated-grid"></div>
   <div class="bg-blur blur-1"></div>
   <div class="bg-blur blur-2"></div>
 
-<header class="navbar">
-  <a href="index.html" class="logo logo-wrap">
-    <img src="assets/nftweb3-logo.png" alt="NFT Web3" class="site-logo" />
-  </a>
+  <header class="navbar">
+    <a href="index.html" class="logo logo-wrap">
+      <img src="assets/nftweb3-logo.png" alt="NFT Web3" class="site-logo" />
+    </a>
 
-  <nav class="nav-links" id="mainNav">
-    <a href="index.html" class="active">Home</a>
-    <a href="explore.html">Explore</a>
-    <a href="dashboard.html">Dashboard</a>
-  </nav>
+    <nav class="nav-links" id="mainNav">
+      <a href="index.html" class="active">Home</a>
+      <a href="explore.html">Explore</a>
+      <a href="dashboard.html">Dashboard</a>
+    </nav>
 
-  <div id="authButtons" style="display:flex; gap:12px; flex-wrap:wrap;"></div>
-</header>
+    <div id="authButtons" style="display:flex; gap:12px; flex-wrap:wrap;"></div>
+  </header>
 
   <section class="hero-slider-section fade-up fade-delay-1">
     <div class="hero-slider">
@@ -78,127 +78,75 @@
     </div>
   </section>
 
-  <section class="section fade-up fade-delay-2">
-    <div class="market-toolbar">
-      <input type="text" class="market-search" placeholder="Search NFTs, creators, collections..." />
-      <div class="market-tags">
-        <button class="tag-btn">All</button>
-        <button class="tag-btn">Admin Drops</button>
-        <button class="tag-btn">Art</button>
-        <button class="tag-btn">Gaming</button>
-        <button class="tag-btn">PFP</button>
-        <button class="tag-btn">External</button>
-      </div>
+ <section class="section fade-up fade-delay-2">
+  <div class="market-toolbar">
+    <input
+      type="text"
+      class="market-search"
+      id="marketSearch"
+      placeholder="Search NFTs, creators, collections..."
+    />
+    <div class="market-tags">
+      <button class="tag-btn active" data-filter="all">All</button>
+      <button class="tag-btn" data-filter="holdable">Holdable</button>
+      <button class="tag-btn" data-filter="art">Art</button>
+      <button class="tag-btn" data-filter="gaming">Gaming</button>
+      <button class="tag-btn" data-filter="pfp">PFP</button>
+      <button class="tag-btn" data-filter="external">External</button>
     </div>
-  </section>
+  </div>
+</section>
 
-  <section class="section fade-up fade-delay-2">
-    <div class="section-title-wrap">
-      <p class="section-mini">LIVE MARKET</p>
-      <h2>Marketplace Overview</h2>
-    </div>
+<section class="section fade-up fade-delay-3">
+  <div class="section-title-wrap">
+    <p class="section-mini">TRENDING</p>
+    <h2>Trending Collections</h2>
+  </div>
 
-    <div class="about-grid">
-      <div class="glass-box">
-        <h2>How Holding Works</h2>
-        <p>
-          Choose an admin NFT, select a deposit coin, send the deposit, then wait for
-          admin confirmation. Once approved, your hold starts for 12 hours.
-        </p>
+  <div class="trending-collections">
+    <a class="trend-box trend-link" href="#external-nfts" data-filter-target="external">
+      <img src="https://images.unsplash.com/photo-1545239351-1141bd82e8a6?q=80&w=900&auto=format&fit=crop" alt="">
+      <div>
+        <h3>Dark Vision</h3>
+        <p>Floor: 1.8 ETH</p>
       </div>
+    </a>
 
-      <div class="glass-box">
-        <h2>Admin-Created NFTs</h2>
-        <p>
-          Only admin-created NFTs can be held on this platform. They appear first and
-          are the core listings of the marketplace.
-        </p>
+    <a class="trend-box trend-link" href="#holdable-nfts" data-filter-target="gaming">
+      <img src="https://images.unsplash.com/photo-1642104704074-907c0698cbd9?q=80&w=900&auto=format&fit=crop" alt="">
+      <div>
+        <h3>Cyber Monkey</h3>
+        <p>Floor: 1.1 ETH</p>
       </div>
+    </a>
 
-      <div class="glass-box">
-        <h2>External NFTs</h2>
-        <p>
-          Browse additional external NFTs for inspiration and discovery. These can be
-          viewed but are not held directly through this site.
-        </p>
+    <a class="trend-box trend-link" href="#holdable-nfts" data-filter-target="art">
+      <img src="https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?q=80&w=900&auto=format&fit=crop" alt="">
+      <div>
+        <h3>Neon Genesis</h3>
+        <p>Floor: 2.4 ETH</p>
       </div>
-    </div>
-  </section>
+    </a>
 
-  <section class="section fade-up fade-delay-3">
-    <div class="section-title-wrap">
-      <p class="section-mini">TRENDING</p>
-      <h2>Trending Collections</h2>
-    </div>
-
-    <div class="trending-collections">
-      <div class="trend-box">
-        <img src="https://images.unsplash.com/photo-1545239351-1141bd82e8a6?q=80&w=900&auto=format&fit=crop" alt="">
-        <div>
-          <h3>Dark Vision</h3>
-          <p>Floor: 1.8 ETH</p>
-        </div>
+    <a class="trend-box trend-link" href="#holdable-nfts" data-filter-target="pfp">
+      <img src="https://images.unsplash.com/photo-1642425149556-b6f6c1f9b1d4?q=80&w=900&auto=format&fit=crop" alt="">
+      <div>
+        <h3>Pixel Warrior</h3>
+        <p>Floor: 0.9 ETH</p>
       </div>
-
-      <div class="trend-box">
-        <img src="https://images.unsplash.com/photo-1642104704074-907c0698cbd9?q=80&w=900&auto=format&fit=crop" alt="">
-        <div>
-          <h3>Cyber Monkey</h3>
-          <p>Floor: 1.1 ETH</p>
-        </div>
-      </div>
-
-      <div class="trend-box">
-        <img src="https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?q=80&w=900&auto=format&fit=crop" alt="">
-        <div>
-          <h3>Neon Genesis</h3>
-          <p>Floor: 2.4 ETH</p>
-        </div>
-      </div>
-
-      <div class="trend-box">
-        <img src="https://images.unsplash.com/photo-1642425149556-b6f6c1f9b1d4?q=80&w=900&auto=format&fit=crop" alt="">
-        <div>
-          <h3>Pixel Warrior</h3>
-          <p>Floor: 0.9 ETH</p>
-        </div>
-      </div>
-    </div>
-  </section>
+    </a>
+  </div>
+</section>
 
   <section class="section fade-up fade-delay-3" id="holdable-nfts">
     <div class="section-title-wrap">
-      <p class="section-mini">ADMIN LISTINGS</p>
+      <p class="section-mini">HOLDABLE LISTINGS</p>
       <h2>Holdable NFTs</h2>
     </div>
 
     <div class="card-grid market-grid" id="adminNftGrid">
       <div class="glass-box">
-        <h2>Loading admin NFTs...</h2>
-      </div>
-    </div>
-  </section>
-
-  <section class="section fade-up fade-delay-4">
-    <div class="section-title-wrap">
-      <p class="section-mini">MARKET ACTIVITY</p>
-      <h2>Recent Activity</h2>
-    </div>
-
-    <div class="about-grid">
-      <div class="glass-box">
-        <h2>Latest Holds</h2>
-        <p>New hold requests and active reservations appear here as your platform grows.</p>
-      </div>
-
-      <div class="glass-box">
-        <h2>Deposit Requests</h2>
-        <p>Users submit pending deposit requests before the admin confirms and activates the hold.</p>
-      </div>
-
-      <div class="glass-box">
-        <h2>Live Admin Queue</h2>
-        <p>Admin can monitor and confirm pending deposits from the admin deposits page.</p>
+        <h2>Loading holdable NFTs...</h2>
       </div>
     </div>
   </section>
@@ -253,7 +201,7 @@
     <div class="cta-banner">
       <div>
         <h2>Ready to request your first hold?</h2>
-        <p>Create an account, browse admin NFTs, and submit a deposit request.</p>
+        <p>Create an account, browse holdable NFTs, and submit a deposit request.</p>
       </div>
       <a href="register.html" class="primary-btn">Start Now</a>
     </div>

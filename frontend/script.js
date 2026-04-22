@@ -1,129 +1,112 @@
-function hideLoader() {
-  const loader = document.getElementById("pageLoader");
-  if (!loader) return;
-  loader.classList.add("hide");
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  setTimeout(hideLoader, 250);
-});
-
-window.addEventListener("load", () => {
-  hideLoader();
-});
-
-setTimeout(() => {
-  hideLoader();
-}, 1600);
-
+const API_BASE = "https://nft-web3-production.up.railway.app";
 const ADMIN_EMAIL = "mjessydk@gmail.com";
 
 let currentSlide = 0;
-let selectedHoldNFT = null;
 let depositWalletMap = {};
+let allHoldableNFTs = [];
+let allExternalNFTs = [];
+let activeFilter = "all";
+let activeSearch = "";
 
 const externalNFTsFallback = [
   {
     title: "Featured NFT 1",
     image_url: "https://images.unsplash.com/photo-1545239351-1141bd82e8a6?q=80&w=900&auto=format&fit=crop",
     link: "https://opensea.io/",
-    source: "featured"
+    source: "featured",
+    category: "external"
   },
   {
     title: "Featured NFT 2",
     image_url: "https://images.unsplash.com/photo-1642425149556-b6f6c1f9b1d4?q=80&w=900&auto=format&fit=crop",
     link: "https://opensea.io/",
-    source: "featured"
+    source: "featured",
+    category: "external"
   },
   {
     title: "Featured NFT 3",
     image_url: "https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?q=80&w=900&auto=format&fit=crop",
     link: "https://opensea.io/",
-    source: "featured"
+    source: "featured",
+    category: "external"
   },
   {
     title: "Featured NFT 4",
     image_url: "https://images.unsplash.com/photo-1642104704074-907c0698cbd9?q=80&w=900&auto=format&fit=crop",
     link: "https://opensea.io/",
-    source: "featured"
+    source: "featured",
+    category: "external"
   },
   {
     title: "Featured NFT 5",
     image_url: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=900&auto=format&fit=crop",
     link: "https://opensea.io/",
-    source: "featured"
+    source: "featured",
+    category: "external"
   },
   {
     title: "Featured NFT 6",
     image_url: "https://images.unsplash.com/photo-1545987796-200677ee1011?q=80&w=900&auto=format&fit=crop",
     link: "https://opensea.io/",
-    source: "featured"
+    source: "featured",
+    category: "external"
   },
   {
     title: "Featured NFT 7",
     image_url: "https://images.unsplash.com/photo-1614850523459-c2f4c699c52c?q=80&w=900&auto=format&fit=crop",
     link: "https://opensea.io/",
-    source: "featured"
+    source: "featured",
+    category: "external"
   },
   {
     title: "Featured NFT 8",
     image_url: "https://images.unsplash.com/photo-1642425149556-b6f6c1f9b1d4?q=80&w=900&auto=format&fit=crop",
     link: "https://opensea.io/",
-    source: "featured"
+    source: "featured",
+    category: "external"
   }
 ];
 
 const currentPage = window.location.pathname;
 
+function hideLoader() {
+  const loader = document.getElementById("pageLoader");
+  if (!loader) return;
+  loader.classList.add("hide");
+  setTimeout(() => {
+    loader.style.display = "none";
+  }, 300);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  setTimeout(hideLoader, 180);
+});
+
+window.addEventListener("load", hideLoader);
+setTimeout(hideLoader, 700);
+
 // Protect login page
 if (currentPage.includes("login.html")) {
   const userData = localStorage.getItem("user");
-  if (userData) {
-    window.location.href = "dashboard.html";
-  }
+  if (userData) window.location.href = "dashboard.html";
 }
 
 // Protect logged-in pages
 if (currentPage.includes("dashboard.html")) {
   const userData = localStorage.getItem("user");
-  if (!userData) {
-    window.location.href = "login.html";
-  }
+  if (!userData) window.location.href = "login.html";
 }
 
 // Protect admin pages
-if (
-  currentPage.includes("create-nft.html") ||
-  currentPage.includes("admin-deposits.html")
-) {
+if (currentPage.includes("create-nft.html") || currentPage.includes("admin-deposits.html")) {
   const userData = localStorage.getItem("user");
-
   if (!userData) {
     window.location.href = "login.html";
   } else {
     const user = JSON.parse(userData);
-    if (user.email !== ADMIN_EMAIL) {
-      window.location.href = "index.html";
-    }
+    if (user.email !== ADMIN_EMAIL) window.location.href = "index.html";
   }
 }
-
-const holdModal = document.getElementById("holdModal");
-const closeHoldModal = document.getElementById("closeHoldModal");
-const cancelHoldBtn = document.getElementById("cancelHoldBtn");
-const submitDepositBtn = document.getElementById("submitDepositBtn");
-const coinSelect = document.getElementById("coinSelect");
-const modalWalletAddress = document.getElementById("modalWalletAddress");
-const modalHoldAmount = document.getElementById("modalHoldAmount");
-const modalStatusText = document.getElementById("modalStatusText");
-const copyWalletBtn = document.getElementById("copyWalletBtn");
-const holdPreviewImage = document.getElementById("holdPreviewImage");
-const holdPreviewTitle = document.getElementById("holdPreviewTitle");
-const holdPreviewStatus = document.getElementById("holdPreviewStatus");
-const txReferenceInput = document.getElementById("txReferenceInput");
-const coinButtons = document.querySelectorAll(".coin-btn");
-const selectedCoinLabel = document.getElementById("selectedCoinLabel");
-const setAmountBtn = document.getElementById("setAmountBtn");
 
 function updateAuthButtons() {
   const authButtonsContainer = document.getElementById("authButtons");
@@ -132,10 +115,18 @@ function updateAuthButtons() {
   const userData = localStorage.getItem("user");
 
   if (userData) {
-    authButtonsContainer.innerHTML = `
-      <a href="dashboard.html" class="secondary-btn">Dashboard</a>
-      <button onclick="logout()" class="secondary-btn">Logout</button>
-    `;
+    const user = JSON.parse(userData);
+
+    if (user.email === ADMIN_EMAIL) {
+      authButtonsContainer.innerHTML = `
+        <button onclick="logout()" class="secondary-btn">Logout</button>
+      `;
+    } else {
+      authButtonsContainer.innerHTML = `
+        <a href="dashboard.html" class="secondary-btn">Dashboard</a>
+        <button onclick="logout()" class="secondary-btn">Logout</button>
+      `;
+    }
   } else {
     authButtonsContainer.innerHTML = `
       <a href="register.html" class="secondary-btn">Sign Up</a>
@@ -149,6 +140,8 @@ function updateMainNav() {
   if (!nav) return;
 
   const userData = localStorage.getItem("user");
+  const dashboardLinks = nav.querySelectorAll('a[href="dashboard.html"]');
+  dashboardLinks.forEach((link) => link.remove());
 
   nav.querySelectorAll(".admin-nav-link").forEach((link) => link.remove());
 
@@ -164,11 +157,10 @@ function updateMainNav() {
       <a href="admin-deposits.html" class="admin-nav-link">Admin Deposits</a>
       `
     );
+  } else {
+    nav.insertAdjacentHTML("beforeend", `<a href="dashboard.html">Dashboard</a>`);
   }
 }
-
-updateAuthButtons();
-updateMainNav();
 
 const loginForm = document.getElementById("loginForm");
 if (loginForm) {
@@ -180,17 +172,16 @@ if (loginForm) {
     const loginMessage = document.getElementById("loginMessage");
 
     try {
-      const response = await fetch("http://127.0.0.1:5000/api/login", {
+      const response = await fetch(`${API_BASE}/api/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password })
       });
 
       const data = await response.json();
-
       if (loginMessage) loginMessage.textContent = data.message || "";
 
-      if (data.status === "success") {
+      if (data.status === "success" || data.user) {
         localStorage.setItem("user", JSON.stringify(data.user));
         updateAuthButtons();
         updateMainNav();
@@ -214,17 +205,16 @@ if (registerForm) {
     const registerMessage = document.getElementById("registerMessage");
 
     try {
-      const response = await fetch("http://127.0.0.1:5000/api/register", {
+      const response = await fetch(`${API_BASE}/api/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, email, password })
       });
 
       const data = await response.json();
-
       if (registerMessage) registerMessage.textContent = data.message || "";
 
-      if (data.status === "success") {
+      if (data.status === "success" || data.user) {
         window.location.href = "login.html";
       }
     } catch (error) {
@@ -234,43 +224,47 @@ if (registerForm) {
   });
 }
 
+/* ========= FIXED CREATE NFT FORM ========= */
 const nftForm = document.getElementById("nftForm");
 if (nftForm) {
   nftForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const title = document.getElementById("nftTitle").value;
-    const image_url = document.getElementById("nftImage").value;
-    const price = document.getElementById("nftPrice").value;
+    const title = document.getElementById("nftTitle").value.trim();
+    const image_url = document.getElementById("nftImage").value.trim();
+    const price = document.getElementById("nftPrice").value.trim();
     const nftMessage = document.getElementById("nftMessage");
-    const userData = localStorage.getItem("user");
 
-    if (!userData) {
-      if (nftMessage) nftMessage.textContent = "You must be logged in.";
+    if (!title || !image_url || !price) {
+      if (nftMessage) nftMessage.textContent = "Please fill all NFT fields.";
       return;
     }
 
-    const user = JSON.parse(userData);
-
     try {
-      const response = await fetch("http://127.0.0.1:5000/api/create-nft", {
+      const response = await fetch(`${API_BASE}/api/nfts`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title,
-          image_url,
-          price,
-          creator_email: user.email
+          name: title,
+          image: image_url,
+          price: price,
+          holdable: true
         })
       });
 
       const data = await response.json();
 
-      if (nftMessage) nftMessage.textContent = data.message || "";
-
-      if (data.status === "success") {
+      if (response.ok) {
+        if (nftMessage) nftMessage.textContent = "NFT created successfully.";
         nftForm.reset();
-        window.location.href = "index.html";
+
+        setTimeout(() => {
+          window.location.href = "index.html";
+        }, 700);
+      } else {
+        if (nftMessage) {
+          nftMessage.textContent = data.message || data.error || "Could not create NFT.";
+        }
       }
     } catch (error) {
       console.error(error);
@@ -295,207 +289,50 @@ function formatCountdown(holdUntil) {
   return `${hours}h ${minutes}m ${seconds}s`;
 }
 
-function buildFakeQrPattern(text = "") {
-  const fakeQrBox = document.getElementById("fakeQrBox");
-  if (!fakeQrBox) return;
-
-  const seed = text || "nftweb3";
-  let html = `<div class="qr-center-logo">W3</div>`;
-
-  for (let row = 0; row < 17; row++) {
-    for (let col = 0; col < 17; col++) {
-      const val = (seed.charCodeAt((row + col) % seed.length) + row * 7 + col * 11) % 3;
-      if (val === 0) {
-        html += `<span class="qr-pixel" style="left:${col * 12 + 10}px; top:${row * 12 + 10}px;"></span>`;
-      }
-    }
-  }
-
-  html += `
-    <span class="qr-eye qr-eye-1"></span>
-    <span class="qr-eye qr-eye-2"></span>
-    <span class="qr-eye qr-eye-3"></span>
-  `;
-
-  fakeQrBox.innerHTML = html;
-}
-
-function setSelectedCoin(coin) {
-  if (coinSelect) {
-    coinSelect.value = coin;
-  }
-
-  coinButtons.forEach((btn) => {
-    btn.classList.toggle("active", btn.dataset.coin === coin);
-  });
-
-  if (selectedCoinLabel) {
-    selectedCoinLabel.textContent = coin;
-  }
-
-  updateDepositWalletDisplay();
-}
-
-function updateDepositWalletDisplay() {
-  if (!coinSelect || !modalWalletAddress) return;
-  const selectedCoin = coinSelect.value;
-  const wallet = depositWalletMap[selectedCoin] || "No wallet available";
-  modalWalletAddress.textContent = wallet;
-  buildFakeQrPattern(`${selectedCoin}:${wallet}`);
-}
-
-coinButtons.forEach((btn) => {
-  btn.addEventListener("click", () => {
-    setSelectedCoin(btn.dataset.coin);
-  });
-});
-
-if (setAmountBtn) {
-  setAmountBtn.addEventListener("click", () => {
-    if (modalStatusText && modalHoldAmount) {
-      modalStatusText.textContent = `Use the exact amount shown: ${modalHoldAmount.textContent}`;
-    }
+function normalizeHoldableNFTs(nfts) {
+  return (nfts || []).map((nft, index) => {
+    const tags = ["art", "gaming", "pfp"];
+    return {
+      ...nft,
+      title: nft.title || nft.name || "Untitled NFT",
+      image_url: nft.image_url || nft.image || "https://dummyimage.com/600x600/111827/ffffff&text=NFT",
+      category: nft.category || tags[index % tags.length],
+      type: "holdable"
+    };
   });
 }
 
-function openHoldModal(nftId, priceText, title, imageUrl) {
-  const userData = localStorage.getItem("user");
-
-  if (!userData) {
-    window.location.href = "register.html";
-    return;
-  }
-
-  selectedHoldNFT = {
-    nftId,
-    priceText,
-    title,
-    imageUrl
-  };
-
-  if (modalHoldAmount) modalHoldAmount.textContent = priceText;
-  if (holdPreviewTitle) holdPreviewTitle.textContent = title || "NFT Title";
-  if (holdPreviewImage) holdPreviewImage.src = imageUrl || "";
-  if (holdPreviewStatus) holdPreviewStatus.textContent = "Waiting for payment";
-  if (txReferenceInput) txReferenceInput.value = "";
-
-  setSelectedCoin("ETH");
-
-  if (modalStatusText) {
-    modalStatusText.textContent = "Select a coin, deposit externally, then submit your request.";
-  }
-
-  if (holdModal) {
-    holdModal.classList.add("show");
-  }
-}
-
-window.openHoldModal = openHoldModal;
-
-function closeModal() {
-  if (holdModal) holdModal.classList.remove("show");
-  selectedHoldNFT = null;
-}
-
-if (closeHoldModal) closeHoldModal.addEventListener("click", closeModal);
-if (cancelHoldBtn) cancelHoldBtn.addEventListener("click", closeModal);
-
-if (holdModal) {
-  holdModal.addEventListener("click", (e) => {
-    if (e.target === holdModal) closeModal();
-  });
-}
-
-if (copyWalletBtn) {
-  copyWalletBtn.addEventListener("click", async () => {
-    try {
-      await navigator.clipboard.writeText(modalWalletAddress.textContent);
-      if (modalStatusText) modalStatusText.textContent = "Wallet address copied.";
-    } catch (error) {
-      console.error(error);
-      if (modalStatusText) modalStatusText.textContent = "Could not copy wallet address.";
-    }
-  });
-}
-
-if (submitDepositBtn) {
-  submitDepositBtn.addEventListener("click", async () => {
-    if (!selectedHoldNFT) return;
-
-    const userData = localStorage.getItem("user");
-    if (!userData) {
-      window.location.href = "register.html";
-      return;
-    }
-
-    const user = JSON.parse(userData);
-    const selectedCoin = coinSelect ? coinSelect.value : "ETH";
-
-    if (holdPreviewStatus) {
-      holdPreviewStatus.textContent = "Submitting request";
-    }
-
-    try {
-      const response = await fetch("http://127.0.0.1:5000/api/create-deposit-request", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          nft_id: selectedHoldNFT.nftId,
-          user_email: user.email,
-          coin: selectedCoin,
-          tx_reference: txReferenceInput ? txReferenceInput.value.trim() : ""
-        })
-      });
-
-      const data = await response.json();
-
-      if (data.status === "success") {
-        if (holdPreviewStatus) holdPreviewStatus.textContent = "Pending admin confirmation";
-        if (modalStatusText) {
-          modalStatusText.textContent = "Deposit request submitted. Waiting for admin confirmation.";
-        }
-
-        setTimeout(() => {
-          closeModal();
-          alert(data.message);
-        }, 900);
-      } else {
-        if (holdPreviewStatus) holdPreviewStatus.textContent = "Request failed";
-        if (modalStatusText) modalStatusText.textContent = data.message;
-        alert(data.message);
-      }
-    } catch (error) {
-      console.error(error);
-      if (holdPreviewStatus) holdPreviewStatus.textContent = "Request failed";
-      if (modalStatusText) modalStatusText.textContent = "Could not submit deposit request.";
-    }
-  });
+function normalizeExternalNFTs(nfts) {
+  return (nfts || []).map((nft) => ({
+    ...nft,
+    category: nft.category || "external",
+    type: "external"
+  }));
 }
 
 function renderAdminNFTCards(nfts) {
   return nfts.map((nft) => {
     const isHeld = nft.hold_status === "held";
     const countdown = isHeld ? formatCountdown(nft.hold_until) : "Available now";
+    const safeImage = nft.image_url || "https://dummyimage.com/600x600/111827/ffffff&text=NFT";
 
     return `
-      <div class="nft-card">
-        <img src="${nft.image_url}" alt="${nft.title}" onerror="this.src='https://via.placeholder.com/600x600?text=NFT';" />
+      <div class="nft-card nft-item" data-type="holdable" data-category="${nft.category || "holdable"}" data-search="${(nft.title || "").toLowerCase()} ${(nft.category || "").toLowerCase()} holdable">
+        <img
+          src="${safeImage}"
+          alt="${nft.title}"
+          onerror="this.src='https://dummyimage.com/600x600/111827/ffffff&text=NFT';"
+        />
         <div class="card-content">
           <h3>${nft.title}</h3>
-          <div class="card-meta">
-            <span>${nft.price}</span>
-            <span>#${nft.id}</span>
-          </div>
-          <p class="creator-line">Admin NFT</p>
-          <p class="creator-line">Status: ${isHeld ? "❌ Held" : "✅ Available"}</p>
-          <p class="creator-line">${isHeld ? "Time left: " + countdown : "Hold period: 12 hours"}</p>
+          <p class="creator-line">Collection: Holdable NFT</p>
+          <p class="creator-line">${isHeld ? "Status: Held" : "Status: Available"}</p>
+          <p class="creator-line">${isHeld ? "Time left: " + countdown : "12 hour hold window"}</p>
           <div class="card-actions">
             ${
               isHeld
                 ? `<button class="secondary-btn" disabled>Held</button>`
-                : `<button class="primary-btn" onclick="openHoldModal(${nft.id}, '${nft.price.replace(/'/g, "\\'")}', '${nft.title.replace(/'/g, "\\'")}', '${nft.image_url.replace(/'/g, "\\'")}')">Hold NFT</button>`
+                : `<a href="explore.html" class="secondary-btn">Holdable NFT</a>`
             }
           </div>
         </div>
@@ -504,11 +341,26 @@ function renderAdminNFTCards(nfts) {
   }).join("");
 }
 
+function renderExternalNFTCards(nfts) {
+  return nfts.map((nft) => `
+    <div class="nft-card nft-item" data-type="external" data-category="${nft.category || "external"}" data-search="${(nft.title || "").toLowerCase()} ${(nft.source || "").toLowerCase()} external">
+      <img src="${nft.image_url || 'https://dummyimage.com/600x600/111827/ffffff&text=NFT'}" alt="${nft.title}" onerror="this.src='https://dummyimage.com/600x600/111827/ffffff&text=NFT';" />
+      <div class="card-content">
+        <h3>${nft.title}</h3>
+        <p class="creator-line">Collection: ${nft.source}</p>
+        <div class="card-actions">
+          <a href="${nft.link}" target="_blank" rel="noopener noreferrer" class="secondary-btn">View NFT</a>
+        </div>
+      </div>
+    </div>
+  `).join("");
+}
+
 async function fetchAdminNFTs() {
-  const response = await fetch("http://127.0.0.1:5000/api/nfts");
+  const response = await fetch(`${API_BASE}/api/nfts`);
   const data = await response.json();
   depositWalletMap = data.deposit_wallets || {};
-  return data.nfts || [];
+  return normalizeHoldableNFTs(data.nfts || []);
 }
 
 async function loadAdminNFTs() {
@@ -516,25 +368,26 @@ async function loadAdminNFTs() {
   if (!grid) return;
 
   try {
-    const nfts = await fetchAdminNFTs();
+    allHoldableNFTs = await fetchAdminNFTs();
 
-    if (nfts.length === 0) {
+    if (allHoldableNFTs.length === 0) {
       grid.innerHTML = `
         <div class="glass-box">
-          <h2>No admin NFTs yet</h2>
-          <p>The admin has not added any NFTs yet.</p>
+          <h2>No holdable NFTs yet</h2>
+          <p>The admin has not added any holdable NFTs yet.</p>
         </div>
       `;
       return;
     }
 
-    grid.innerHTML = renderAdminNFTCards(nfts);
+    grid.innerHTML = renderAdminNFTCards(allHoldableNFTs);
+    applyMarketplaceFilters();
   } catch (error) {
     console.error(error);
     grid.innerHTML = `
       <div class="glass-box">
         <h2>Error</h2>
-        <p>Could not load admin NFTs.</p>
+        <p>Could not load holdable NFTs.</p>
       </div>
     `;
   }
@@ -550,8 +403,8 @@ async function loadExploreNFTs() {
     if (nfts.length === 0) {
       grid.innerHTML = `
         <div class="glass-box">
-          <h2>No admin NFTs yet</h2>
-          <p>The admin has not added any NFTs yet.</p>
+          <h2>No holdable NFTs yet</h2>
+          <p>The admin has not added any holdable NFTs yet.</p>
         </div>
       `;
       return;
@@ -563,7 +416,7 @@ async function loadExploreNFTs() {
     grid.innerHTML = `
       <div class="glass-box">
         <h2>Error</h2>
-        <p>Could not load admin NFTs.</p>
+        <p>Could not load holdable NFTs.</p>
       </div>
     `;
   }
@@ -599,7 +452,7 @@ async function loadMyHeldNFTs() {
 
     grid.innerHTML = myHeld.map((nft) => `
       <div class="nft-card">
-        <img src="${nft.image_url}" alt="${nft.title}" onerror="this.src='https://via.placeholder.com/600x600?text=NFT';" />
+        <img src="${nft.image_url}" alt="${nft.title}" onerror="this.src='https://dummyimage.com/600x600/111827/ffffff&text=NFT';" />
         <div class="card-content">
           <h3>${nft.title}</h3>
           <div class="card-meta">
@@ -630,152 +483,79 @@ async function loadExternalNFTs() {
   if (!grid) return;
 
   try {
-    const response = await fetch("http://127.0.0.1:5000/api/external-nfts");
+    const response = await fetch(`${API_BASE}/api/external-nfts`);
     const data = await response.json();
 
     let nfts = data.external_nfts || [];
+    if (!nfts.length) nfts = externalNFTsFallback;
 
-    if (!nfts.length) {
-      nfts = externalNFTsFallback;
-    }
-
-    grid.innerHTML = nfts.map((nft) => `
-      <div class="nft-card">
-        <img src="${nft.image_url || 'https://via.placeholder.com/600x600?text=NFT'}" alt="${nft.title}" onerror="this.src='https://via.placeholder.com/600x600?text=NFT';" />
-        <div class="card-content">
-          <h3>${nft.title}</h3>
-          <p class="creator-line">Collection: ${nft.source}</p>
-          <div class="card-actions">
-            <a href="${nft.link}" target="_blank" rel="noopener noreferrer" class="secondary-btn">View NFT</a>
-          </div>
-        </div>
-      </div>
-    `).join("");
+    allExternalNFTs = normalizeExternalNFTs(nfts);
+    grid.innerHTML = renderExternalNFTCards(allExternalNFTs);
+    applyMarketplaceFilters();
   } catch (error) {
     console.error(error);
-    grid.innerHTML = externalNFTsFallback.map((nft) => `
-      <div class="nft-card">
-        <img src="${nft.image_url}" alt="${nft.title}" onerror="this.src='https://via.placeholder.com/600x600?text=NFT';" />
-        <div class="card-content">
-          <h3>${nft.title}</h3>
-          <p class="creator-line">Collection: ${nft.source}</p>
-          <div class="card-actions">
-            <a href="${nft.link}" target="_blank" rel="noopener noreferrer" class="secondary-btn">View NFT</a>
-          </div>
-        </div>
-      </div>
-    `).join("");
+    allExternalNFTs = normalizeExternalNFTs(externalNFTsFallback);
+    grid.innerHTML = renderExternalNFTCards(allExternalNFTs);
+    applyMarketplaceFilters();
   }
 }
 
-async function loadPendingDeposits() {
-  const grid = document.getElementById("pendingDepositsGrid");
-  if (!grid) return;
+function applyMarketplaceFilters() {
+  const allCards = document.querySelectorAll(".nft-item");
 
-  const userData = localStorage.getItem("user");
-  if (!userData) return;
+  allCards.forEach((card) => {
+    const type = card.dataset.type || "";
+    const category = card.dataset.category || "";
+    const searchText = card.dataset.search || "";
 
-  const user = JSON.parse(userData);
+    let matchesFilter = false;
 
-  if (user.email !== ADMIN_EMAIL) {
-    grid.innerHTML = `
-      <div class="glass-box">
-        <h2>Access denied</h2>
-        <p>This page is for admin only.</p>
-      </div>
-    `;
-    return;
-  }
+    if (activeFilter === "all") matchesFilter = true;
+    else if (activeFilter === "holdable") matchesFilter = type === "holdable";
+    else if (activeFilter === "external") matchesFilter = type === "external";
+    else matchesFilter = category === activeFilter;
 
-  try {
-    const response = await fetch(`http://127.0.0.1:5000/api/pending-deposits?user_email=${encodeURIComponent(user.email)}`);
-    const data = await response.json();
+    const matchesSearch = !activeSearch || searchText.includes(activeSearch);
 
-    if (!data.deposits || data.deposits.length === 0) {
-      grid.innerHTML = `
-        <div class="glass-box">
-          <h2>No pending deposits</h2>
-          <p>There are no deposit requests waiting for approval.</p>
-        </div>
-      `;
-      return;
-    }
-
-    grid.innerHTML = data.deposits.map((deposit) => `
-      <div class="glass-box">
-        <h2>${deposit.nft_title}</h2>
-        <p>User: ${deposit.user_email}</p>
-        <p>Coin: ${deposit.coin}</p>
-        <p>Amount: ${deposit.amount}</p>
-        <p>Deposit Wallet: ${deposit.deposit_wallet}</p>
-        <p>Requested: ${deposit.created_at}</p>
-        <div class="card-actions">
-          <button class="primary-btn" onclick="confirmDeposit(${deposit.id})">Confirm</button>
-          <button class="secondary-btn" onclick="rejectDeposit(${deposit.id})">Reject</button>
-        </div>
-      </div>
-    `).join("");
-  } catch (error) {
-    console.error(error);
-    grid.innerHTML = `
-      <div class="glass-box">
-        <h2>Error</h2>
-        <p>Could not load pending deposits.</p>
-      </div>
-    `;
-  }
-}
-
-async function confirmDeposit(depositId) {
-  const userData = localStorage.getItem("user");
-  if (!userData) return;
-
-  const user = JSON.parse(userData);
-
-  const response = await fetch("http://127.0.0.1:5000/api/confirm-deposit", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      deposit_id: depositId,
-      admin_email: user.email
-    })
+    card.style.display = matchesFilter && matchesSearch ? "" : "none";
   });
-
-  const data = await response.json();
-  alert(data.message);
-  loadPendingDeposits();
-  loadAdminNFTs();
-  loadExploreNFTs();
-  loadMyHeldNFTs();
 }
 
-window.confirmDeposit = confirmDeposit;
+function setupMarketplaceSearch() {
+  const searchInput = document.getElementById("marketSearch");
+  if (!searchInput) return;
 
-async function rejectDeposit(depositId) {
-  const userData = localStorage.getItem("user");
-  if (!userData) return;
-
-  const user = JSON.parse(userData);
-
-  const response = await fetch("http://127.0.0.1:5000/api/reject-deposit", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      deposit_id: depositId,
-      admin_email: user.email
-    })
+  searchInput.addEventListener("input", (e) => {
+    activeSearch = e.target.value.trim().toLowerCase();
+    applyMarketplaceFilters();
   });
-
-  const data = await response.json();
-  alert(data.message);
-  loadPendingDeposits();
 }
 
-window.rejectDeposit = rejectDeposit;
+function setupMarketplaceTags() {
+  const tagButtons = document.querySelectorAll(".tag-btn");
+  if (!tagButtons.length) return;
+
+  tagButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      tagButtons.forEach((btn) => btn.classList.remove("active"));
+      button.classList.add("active");
+      activeFilter = button.dataset.filter || "all";
+      applyMarketplaceFilters();
+    });
+  });
+}
+
+function setupTrendingLinks() {
+  const trendLinks = document.querySelectorAll(".trend-link");
+
+  trendLinks.forEach((link) => {
+    link.addEventListener("click", () => {
+      const targetFilter = link.dataset.filterTarget;
+      const matchingTag = document.querySelector(`.tag-btn[data-filter="${targetFilter}"]`);
+      if (matchingTag) matchingTag.click();
+    });
+  });
+}
 
 function startHeroSlider() {
   const slides = document.querySelectorAll(".hero-slide");
@@ -785,31 +565,7 @@ function startHeroSlider() {
     slides[currentSlide].classList.remove("active");
     currentSlide = (currentSlide + 1) % slides.length;
     slides[currentSlide].classList.add("active");
-  }, 4000);
-}
-
-loadAdminNFTs();
-loadExploreNFTs();
-loadExternalNFTs();
-loadMyHeldNFTs();
-loadPendingDeposits();
-startHeroSlider();
-
-setInterval(() => {
-  if (document.getElementById("adminNftGrid")) loadAdminNFTs();
-  if (document.getElementById("nftGrid")) loadExploreNFTs();
-  if (document.getElementById("myHeldNftGrid")) loadMyHeldNFTs();
-  if (document.getElementById("pendingDepositsGrid")) loadPendingDeposits();
-}, 10000);
-
-const userData = localStorage.getItem("user");
-if (userData) {
-  const user = JSON.parse(userData);
-  const userName = document.getElementById("userName");
-  const userEmail = document.getElementById("userEmail");
-
-  if (userName) userName.textContent = user.username;
-  if (userEmail) userEmail.textContent = user.email;
+  }, 5000);
 }
 
 function logout() {
@@ -820,3 +576,23 @@ function logout() {
 }
 
 window.logout = logout;
+
+document.addEventListener("DOMContentLoaded", () => {
+  updateAuthButtons();
+  updateMainNav();
+  setupMarketplaceSearch();
+  setupMarketplaceTags();
+  setupTrendingLinks();
+
+  loadAdminNFTs();
+  loadExploreNFTs();
+  loadExternalNFTs();
+  loadMyHeldNFTs();
+  startHeroSlider();
+});
+
+setInterval(() => {
+  if (document.getElementById("adminNftGrid")) loadAdminNFTs();
+  if (document.getElementById("nftGrid")) loadExploreNFTs();
+  if (document.getElementById("myHeldNftGrid")) loadMyHeldNFTs();
+}, 10000);
